@@ -1,0 +1,41 @@
+version: '3'
+services:
+  caddy:
+    image: techarchitect/opencontainerforwarder-caddy:${VERSION}
+    restart: unless-stopped
+    volumes:
+      - ./volumes/caddy/data:/data
+      - ./volumes/caddy/config:/config
+      - ./volumes/OpenContainerForwarder/config:/etc/caddy/
+      - ./volumes/caddy/logs:/var/log/caddy
+    ports:
+      - "80:80/tcp"
+      - "443:443/tcp"
+    networks:
+      - proxy
+  OpenContainerForwarder:
+    image: techarchitect/opencontainerforwarder:${VERSION}
+    depends_on: 
+      - caddy
+    restart: unless-stopped
+    environment:
+      - DefaultTLSProvider=${DEFAULT_TLS_PROVIDER}
+      - WebDashEnabled=${DASHBOARD_ENABLED}
+      - CloudFlareAPIKey=${CLOUDFLARE_API_KEY}
+      - LoopFrequency=${LOOP_FREQUENCY}
+      - DefaultLogFormat=${DEFAULT_LOG_FORMAT}
+      - DefaultTrustedProxies=${DEFAULT_TRUSTED_PROXIES}
+    labels:
+      open.container.forwarder.port: "8080"
+      open.container.forwarder.hostname: "${DASHBOARD_HOSTNAME}"
+      open.container.forwarder.restrictip: "${DASHBOARD_RESTRICT_IP}"
+    volumes:
+      - ./volumes/OpenContainerForwarder/config:/data/config
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./volumes/OpenContainerForwarder/dumps/:/dumps/
+      - ./volumes/caddy/logs:/var/log/caddy
+    networks:
+      - proxy
+networks:
+  proxy:
+    external: true
