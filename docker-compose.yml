@@ -31,7 +31,7 @@ services:
       open.container.forwarder.restrictip: "${DASHBOARD_RESTRICT_IP}"
     volumes:
       - ./volumes/OpenContainerForwarder/config:/data/config
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONTAINER_SOCKET}:/var/run/docker.sock
       - ./volumes/OpenContainerForwarder/dumps/:/dumps/
       - ./volumes/caddy/logs:/var/log/caddy
     networks:
